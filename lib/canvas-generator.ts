@@ -47,6 +47,16 @@ const THEME_COLORS: Record<string, ThemeColors> = {
   },
 };
 
+const OCCASION_LABELS: Record<string, string> = {
+  holiday: "Holiday",
+  "chinese-new-year": "Chinese New Year",
+  vacation: "Vacation",
+  medical: "Medical Leave",
+  training: "Training",
+  conference: "Conference",
+  break: "Taking a Break",
+};
+
 export function generateDisplayPicture(
   dateFrom: string,
   dateTo: string,
@@ -96,7 +106,7 @@ export function generateDisplayPicture(
   ctx.fillRect(0, 0, 500, 500);
 
   // Add decorative elements based on occasion
-  if (occasion) {
+  if (occasion && occasion in THEME_COLORS && occasion !== "default") {
     drawOccasionDecorations(ctx, occasion, theme);
   }
 
@@ -126,13 +136,21 @@ export function generateDisplayPicture(
   // Draw "ON LEAVE" heading
   drawTextWithShadow("ON LEAVE", 250, 180, 56, "900");
 
-  // Draw date range
-  const dateText = `${dateFrom} - ${dateTo}`;
-  drawTextWithShadow(dateText, 250, 260, 28, "600");
+  // Draw occasion if provided
+  if (occasion) {
+    const occasionLabel = OCCASION_LABELS[occasion] || occasion;
+    drawTextWithShadow(occasionLabel, 250, 230, 18, "600");
+  }
 
-  // Draw coverer info if provided
+  // Draw date range (adjust Y position based on whether occasion is shown)
+  const dateY = occasion ? 270 : 260;
+  const dateText = `${dateFrom} - ${dateTo}`;
+  drawTextWithShadow(dateText, 250, dateY, 28, "600");
+
+  // Draw coverer info if provided (adjust Y position)
   if (coverer) {
-    drawTextWithShadow(`Contact: ${coverer}`, 250, 320, 20, "500");
+    const covererY = occasion ? 330 : 320;
+    drawTextWithShadow(`Contact: ${coverer}`, 250, covererY, 20, "500");
   }
 
   // Convert canvas to base64
