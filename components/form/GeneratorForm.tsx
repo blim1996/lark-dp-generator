@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { stagger, slideUp } from "@/lib/animations";
+import { OCCASION_OPTIONS } from "@/types";
 import { generateDisplayPicture } from "@/lib/canvas-generator";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
 import DateRangePicker from "@/components/ui/DateRangePicker";
 
 interface GeneratorFormProps {
@@ -23,6 +25,8 @@ export default function GeneratorForm({
 }: GeneratorFormProps) {
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
+  const [occasion, setOccasion] = useState("");
+  const [customOccasion, setCustomOccasion] = useState("");
   const [coverer, setCoverer] = useState("");
   const [error, setError] = useState("");
 
@@ -47,10 +51,14 @@ export default function GeneratorForm({
       // Small delay for UX (so user sees the loading state)
       await new Promise((resolve) => setTimeout(resolve, 500));
 
+      // Determine which occasion to use
+      const finalOccasion = occasion === "custom" ? customOccasion : occasion;
+
       // Generate image using Canvas (client-side, no API call)
       const imageUrl = generateDisplayPicture(
         formatDate(dateFrom),
         formatDate(dateTo),
+        finalOccasion || undefined,
         coverer || undefined
       );
 
@@ -63,6 +71,14 @@ export default function GeneratorForm({
       setIsGenerating(false);
     }
   };
+
+  const occasionOptions = [
+    { value: "", label: "None (Default)" },
+    ...OCCASION_OPTIONS.map((opt) => ({
+      value: opt.value,
+      label: opt.label,
+    })),
+  ];
 
   return (
     <motion.form
@@ -84,6 +100,26 @@ export default function GeneratorForm({
           error={error}
         />
       </motion.div>
+
+      <motion.div variants={slideUp}>
+        <Select
+          label="Occasion (Optional)"
+          options={occasionOptions}
+          value={occasion}
+          onChange={(e) => setOccasion(e.target.value)}
+        />
+      </motion.div>
+
+      {occasion === "custom" && (
+        <motion.div variants={slideUp}>
+          <Input
+            label="Custom Occasion"
+            placeholder="e.g., Family vacation, Personal matters..."
+            value={customOccasion}
+            onChange={(e) => setCustomOccasion(e.target.value)}
+          />
+        </motion.div>
+      )}
 
       <motion.div variants={slideUp}>
         <Input
